@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "gdi.hpp"
+#include "GDISectorReader.hpp"
 
 #define MAGIC_SIZE 4
 
@@ -38,6 +39,15 @@ int main(int argc, char* argv[]){
             std::cout << "[i] " << t.trackNumber << " " << t.filename << "\n";
     }
 
+    GDISectorReader reader(img);
+    std::vector<uint8_t> sector;
+    if (reader.readSector(16, sector)) {
+        // Should contain Primary Volume Descriptor
+        std::string sig(reinterpret_cast<char*>(sector.data() + 1), 5);
+        std::cout << "PVD signature: " << sig << "\n"; // should be "CD001"
+    }
+    
     fileBuffer.close();
+
     return 0;
 }

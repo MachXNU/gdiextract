@@ -11,6 +11,8 @@ GDIImage parseGDI(std::ifstream& file) {
     std::getline(file, line);
     int expected = std::stoi(line);
 
+    assert(expected >= 3 && "There should be at least 3 tracks in a valid .gdi file");
+
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         GDITrack t;
@@ -24,5 +26,6 @@ GDIImage parseGDI(std::ifstream& file) {
 
     assert(image.tracks.size() == (size_t)expected && "Inconsitent number of tracks in .gdi file");
 
+    assert(image.tracks.at(2).lba == 45000 && "track03 LBA should be 45000");
     return image;
 }
