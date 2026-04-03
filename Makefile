@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
-SRC = src/main.cpp src/gdi.cpp src/GDISectorReader.cpp
+SRC = src/main.cpp src/gdi.cpp src/GDISectorReader.cpp src/ISO9660.cpp
 OUT = build/gdiextract
 
 all:

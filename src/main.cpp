@@ -4,6 +4,7 @@
 
 #include "gdi.hpp"
 #include "GDISectorReader.hpp"
+#include "ISO9660.hpp"
 
 #define MAGIC_SIZE 4
 
@@ -46,6 +47,15 @@ int main(int argc, char* argv[]){
         std::string sig(reinterpret_cast<char*>(sector.data() + 1), 5);
         std::cout << "PVD signature: " << sig << "\n"; // should be "CD001"
     }
+
+    const uint8_t* root = &sector[156];
+
+    ISO9660 fs(reader);
+
+    DirectoryRecord rootDirectoryRecord = fs.parseDirectoryRecord(root);
+
+    std::cout << "Directory name: " << rootDirectoryRecord.name << std::endl;
+    std::cout << "Sector: " << rootDirectoryRecord.sector << std::endl;
     
     fileBuffer.close();
 
