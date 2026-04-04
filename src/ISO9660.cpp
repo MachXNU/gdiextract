@@ -41,3 +41,21 @@ DirectoryRecord ISO9660::parseDirectoryRecord(const uint8_t* record){
     
     return r; 
 }
+
+std::vector<DirectoryRecord> ISO9660::getDirectoryContent(const DirectoryRecord* parent){
+    std::cout << "Directory content size: " << parent->size << std::endl;
+    
+    std::vector<DirectoryRecord> children;
+
+    std::vector<uint8_t> directorySector;
+    assert(reader.readSector(parent->sector, directorySector) && "Error, failed to read content directory sector");
+
+    uint16_t offset = 0;
+    while (directorySector[offset] != 0) {
+        DirectoryRecord content = parseDirectoryRecord(&directorySector[offset]);
+        children.push_back(content);
+        offset += content.length;
+    }
+
+    return children;
+}

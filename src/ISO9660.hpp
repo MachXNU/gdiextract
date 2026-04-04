@@ -22,11 +22,8 @@ class ISO9660 {
 public:
     ISO9660(GDISectorReader& reader);
     DirectoryRecord parseDirectoryRecord(const uint8_t* rec);
+    std::vector<DirectoryRecord> getDirectoryContent(const DirectoryRecord* parent);
 
 private:
     GDISectorReader& reader;
-
-    // Root directory info
-    uint32_t rootLBA;
-    uint32_t rootSize;
 };
