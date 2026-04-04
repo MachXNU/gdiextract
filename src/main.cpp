@@ -41,12 +41,17 @@ int main(int argc, char* argv[]){
     }
 
     GDISectorReader reader(img);
+
+    // ========== Reading the Primary Volume Directory ==========
+
     std::vector<uint8_t> sector;
-    if (reader.readSector(16, sector)) {
+    if (reader.readSector(45016, sector)) {
         // Should contain Primary Volume Descriptor
         std::string sig(reinterpret_cast<char*>(sector.data() + 1), 5);
         std::cout << "PVD signature: " << sig << "\n"; // should be "CD001"
     }
+
+    // ========== Reading the Root Directory Record ==========
 
     const uint8_t* root = &sector[156];
 
@@ -56,7 +61,11 @@ int main(int argc, char* argv[]){
 
     std::cout << "Directory name: " << rootDirectoryRecord.name << std::endl;
     std::cout << "Sector: " << rootDirectoryRecord.sector << std::endl;
-    
+
+    // ========== Reading the content of the root directory ==========
+
+
+    // ========== Cleanup ==========
     fileBuffer.close();
 
     return 0;

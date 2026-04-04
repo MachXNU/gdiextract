@@ -22,29 +22,33 @@ GDISectorReader::GDISectorReader(const GDIImage& image){
     isoFile.seekg(0, std::ios::beg);
 }
 
-bool GDISectorReader::readSector(int lba, std::vector<uint8_t>& out){
+bool GDISectorReader::readSector(uint32_t diskLBA, std::vector<uint8_t>& out){
+    // This is a GD-ROM sector!
+    // To read a ISO9660 FS sector, add 45000 to the input.
+    // For example, to read the PVD (FS sector 16), input diskLBA = 45016
     const int RAW = 2352; // TODO: extract this from GDITrack.sectorSize instead?
     const int OFFSET = 16; // strip 16 bytes before reading a real sector
 
     std::ifstream* file;
-    int physicalLBA = lba;
+    uint32_t fsLBA = diskLBA - HIGH_DENSITY_SECTOR_START;
+    uint32_t fileLBA = fsLBA;
 
     if (singleTrack){
         file = &isoFile;
     } else {
-        if (lba < isoTrackSectors){ // we are reading a sector inside the ISO9660 header
+        if (fsLBA < isoTrackSectors){ // we are reading a sector inside the ISO9660 header
             file = &isoFile;
         } else { // we have to seek to the dataFile
             file = &dataFile;
             // track03 already contains isoTrackSectors sectors
             // so the next one lives in the dataTrack, and we should remove
             // the number of sectors stored in track03 already
-            physicalLBA = lba - isoTrackSectors;
+            fileLBA = fsLBA - isoTrackSectors;
         }
     }
 
     out.resize(2048);
-    file->seekg(physicalLBA * RAW + OFFSET);
+    file->seekg(fileLBA * RAW + OFFSET);
     file->read(reinterpret_cast<char*>(out.data()), 2048);
 
     return file->good(); // returns true if all the stream flags are false

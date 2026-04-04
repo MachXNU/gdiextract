@@ -4,9 +4,9 @@
 
 struct GDITrack {
     int trackNumber;
-    int lba;
+    uint32_t lba;
     int trackType;
-    int sectorSize;
+    uint32_t sectorSize;
     std::string filename;
     int offset;
 };

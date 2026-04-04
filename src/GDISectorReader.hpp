@@ -5,6 +5,8 @@
 #include <cassert>
 #include <iostream> // for std::cout
 
+#define HIGH_DENSITY_SECTOR_START 45000
+
 class GDISectorReader{
 public:
     // Constructor
@@ -12,7 +14,7 @@ public:
     GDISectorReader(const GDIImage& image);
 
     // returns true if success
-    bool readSector(int lba, std::vector<uint8_t>& out);
+    bool readSector(uint32_t diskLBA, std::vector<uint8_t>& out);
 
 private:
     const GDITrack* isoTrack;    // track03 with the ISO9660 header (to confirm)
@@ -20,5 +22,5 @@ private:
     bool singleTrack;            // only true for 3 tracks GD-ROMs
     std::ifstream isoFile;
     std::ifstream dataFile;
-    int isoTrackSectors;         // number of sectors in track03
+    uint32_t isoTrackSectors;    // number of sectors in track03
 };
