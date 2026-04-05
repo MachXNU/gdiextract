@@ -22,7 +22,8 @@ class ISO9660 {
 public:
     ISO9660(GDISectorReader& reader);
     DirectoryRecord parseDirectoryRecord(const uint8_t* rec);
-    std::vector<DirectoryRecord> getDirectoryContent(const DirectoryRecord* parent);
+    std::vector<DirectoryRecord> getDirectoryContent(const DirectoryRecord& parent);
+    void prettyPrintTree(const DirectoryRecord& root, uint16_t depth = 0);
 
 private:
     GDISectorReader& reader;

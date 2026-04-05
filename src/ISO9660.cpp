@@ -42,16 +42,15 @@ DirectoryRecord ISO9660::parseDirectoryRecord(const uint8_t* record){
     return r; 
 }
 
-std::vector<DirectoryRecord> ISO9660::getDirectoryContent(const DirectoryRecord* parent){
-    std::cout << "Directory content size: " << parent->size << std::endl;
+std::vector<DirectoryRecord> ISO9660::getDirectoryContent(const DirectoryRecord& parent){
     
     std::vector<DirectoryRecord> children;
 
     uint16_t offset = 0;
     uint32_t readSize = 0;
-    uint32_t currentSector = parent->sector;
+    uint32_t currentSector = parent.sector;
 
-    while (readSize < parent->size){
+    while (readSize < parent.length){
         std::vector<uint8_t> directorySector;
         assert(reader.readSector(currentSector, directorySector) && "Error, failed to read content directory sector");
         offset = 0;
@@ -65,4 +64,19 @@ std::vector<DirectoryRecord> ISO9660::getDirectoryContent(const DirectoryRecord*
     }
 
     return children;
+}
+
+void ISO9660::prettyPrintTree(const DirectoryRecord& root, uint16_t depth){
+    std::vector<DirectoryRecord> children = getDirectoryContent(root);
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        if (it->name == "." || it->name == "..")
+            continue;
+        for (uint16_t i = 0; i < depth-2; i++)
+            std::cout << "|   ";
+        if (depth > 1)
+            std::cout << "|-- ";
+        std::cout << (*it).name << std::endl;
+        if ((*it).flags & (1 << 1))
+            prettyPrintTree((*it), depth+1);
+    }
 }

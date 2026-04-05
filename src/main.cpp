@@ -68,11 +68,9 @@ int main(int argc, char* argv[]){
     std::vector<uint8_t> rootContentSector;
     assert(reader.readSector(rootDirectoryRecord.sector, rootContentSector) && "Error, failed to read root content directory sector");
 
-    std::vector<DirectoryRecord> content = fs.getDirectoryContent(&rootDirectoryRecord);
+    std::vector<DirectoryRecord> content = fs.getDirectoryContent(rootDirectoryRecord);
 
-    for (auto it = content.begin(); it != content.end(); ++it) {
-        std::cout << (*it).name << std::endl;
-    }
+    fs.prettyPrintTree(rootDirectoryRecord);
 
     // ========== Cleanup ==========
     fileBuffer.close();
