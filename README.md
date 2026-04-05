@@ -2,6 +2,18 @@
 
 This tool aims at extracting the content of Sega GD-ROMs in the `.gdi` + `.bin` + `.raw` format.
 
+## How to use
+
+This tool should work on Windows, macOS and Linux.\
+It uses `cmake` as its build system generator.
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
 ## The GD-ROM format
 
 This is complicated and yet not so clear to me, so take the following information with care.
