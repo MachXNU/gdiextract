@@ -16,7 +16,7 @@ int main(int argc, char* argv[]){
     assert(argc >= 2 && "Error, at least 1 argument must be provided");
 
     bool debug = false;
-    std::string filename;
+    std::filesystem::path filename;
 
     argparse::ArgumentParser program("gdiextract");
 
@@ -39,16 +39,23 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    filename = program.get<std::string>("input");
+    // Sanitizing the input filename
+    std::filesystem::path inputFilename = program.get<std::string>("input");
+    if (inputFilename.is_absolute())
+        filename = inputFilename;
+    else 
+        filename = absolute(inputFilename);
 
     // ========== Opening the file ==========
     std::ifstream fileBuffer(filename);
+    if (program["--debug"] == true)
+        std::cout << "[i] Opening file " << filename << std::endl;
     assert(fileBuffer.is_open() && "File does not exist");
 
     std::cout << "[+] Opening file " << filename << std::endl;
 
     // ========== Parsing the .gdi file ==========
-    GDIImage img = parseGDI(fileBuffer);
+    GDIImage img = parseGDI(fileBuffer, filename.parent_path());
 
     if (program["--debug"] == true){
         std::cout << "[+] Found " << img.tracks.size() << " tracks:" << std::endl;

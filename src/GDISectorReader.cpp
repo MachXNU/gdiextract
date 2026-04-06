@@ -7,11 +7,11 @@ GDISectorReader::GDISectorReader(const GDIImage& image){
         dataTrack = &image.tracks.back(); // last track
 
     // TODO: store absolute path instead of relative path
-    isoFile.open(isoTrack->filename, std::ios::binary);
+    isoFile.open(isoTrack->absolutePath, std::ios::binary);
     assert(isoFile.is_open() && "Failed to open isoFile");
 
     if (!singleTrack){
-        dataFile.open(dataTrack->filename, std::ios::binary);
+        dataFile.open(dataTrack->absolutePath, std::ios::binary);
         assert(dataFile.is_open() && "Failed to open dataFile");
     }
 

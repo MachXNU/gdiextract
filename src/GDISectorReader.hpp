@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
-#include <iostream> // for std::cout
+#include <iostream>
 
 #define HIGH_DENSITY_SECTOR_START 45000
 

@@ -3,7 +3,8 @@
 #include <fstream>
 #include <cassert>
 
-GDIImage parseGDI(std::ifstream& file) {
+GDIImage parseGDI(std::ifstream& file, std::filesystem::path pathOfGdiParentFolder) {
+    assert(pathOfGdiParentFolder.is_absolute() && "Requires **absolute** path to GDI file being passed to parseGDI()");
     GDIImage image;
     std::string line;
 
@@ -20,6 +21,8 @@ GDIImage parseGDI(std::ifstream& file) {
         // streams the string, stopping at each whitespace until stream ends
         iss >> t.trackNumber >> t.lba >> t.trackType
             >> t.sectorSize >> t.filename >> t.offset;
+        
+        t.absolutePath = pathOfGdiParentFolder / t.filename;
 
         image.tracks.push_back(t);
     }
