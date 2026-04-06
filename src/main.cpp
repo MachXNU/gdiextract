@@ -13,10 +13,9 @@
 int main(int argc, char* argv[]){
     
     // ========== Argument parsing ==========
-    assert(argc >= 2 && "Error, at least 1 argument must be provided");
+    // assert(argc >= 2 && "Error, at least 1 argument must be provided");
 
     bool debug = false;
-    std::filesystem::path filename;
 
     argparse::ArgumentParser program("gdiextract");
 
@@ -28,8 +27,12 @@ int main(int argc, char* argv[]){
         .help("specify the output directory (to save the extracted files)");
 
     program.add_argument("-d", "--debug")
-        .implicit_value(true)
+        .flag()
         .help("print more debug information");
+
+    program.add_argument("-l", "--list")
+        .flag()
+        .help("tree-list GD-ROM content without extracting");
     
     try {
         program.parse_args(argc, argv);
@@ -39,12 +42,7 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    // Sanitizing the input filename
-    std::filesystem::path inputFilename = program.get<std::string>("input");
-    if (inputFilename.is_absolute())
-        filename = inputFilename;
-    else 
-        filename = absolute(inputFilename);
+    std::filesystem::path filename(program.get<std::string>("input"));
 
     // ========== Opening the file ==========
     std::ifstream fileBuffer(filename);
@@ -52,7 +50,6 @@ int main(int argc, char* argv[]){
         std::cout << "[i] Opening file " << filename << std::endl;
     assert(fileBuffer.is_open() && "File does not exist");
 
-    std::cout << "[+] Opening file " << filename << std::endl;
 
     // ========== Parsing the .gdi file ==========
     GDIImage img = parseGDI(fileBuffer, filename.parent_path());
@@ -71,7 +68,9 @@ int main(int argc, char* argv[]){
     if (reader.readSector(45016, sector)) {
         // Should contain Primary Volume Descriptor
         std::string sig(reinterpret_cast<char*>(sector.data() + 1), 5);
-        std::cout << "PVD signature: " << sig << "\n"; // should be "CD001"
+        assert(sig == "CD001" && "PVD seems wrong, did not read CD001 as expected");
+        if (program["--debug"] == true)
+            std::cout << "PVD signature: " << sig << "\n"; // should be "CD001"
     }
 
     // ========== Reading the Root Directory Record ==========
@@ -96,7 +95,15 @@ int main(int argc, char* argv[]){
 
     std::vector<DirectoryRecord> content = fs.getDirectoryContent(rootDirectoryRecord);
 
-    fs.prettyPrintTree(rootDirectoryRecord);
+    if (program["--list"] == true){
+        fs.prettyPrintTree(rootDirectoryRecord);
+    } else {
+        // ========== Extracting the content of the root directory ==========
+        std::filesystem::path saveDirectory = program.get<std::string>("--output");
+        std::filesystem::create_directory(saveDirectory);
+        fs.extractFile(rootDirectoryRecord, saveDirectory);
+            std::cout << "Extracted files to " << saveDirectory << std::endl;
+    }
 
     // ========== Cleanup ==========
     fileBuffer.close();

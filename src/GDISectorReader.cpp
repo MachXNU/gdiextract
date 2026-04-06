@@ -6,7 +6,6 @@ GDISectorReader::GDISectorReader(const GDIImage& image){
     if (!singleTrack)
         dataTrack = &image.tracks.back(); // last track
 
-    // TODO: store absolute path instead of relative path
     isoFile.open(isoTrack->absolutePath, std::ios::binary);
     assert(isoFile.is_open() && "Failed to open isoFile");
 
@@ -18,7 +17,6 @@ GDISectorReader::GDISectorReader(const GDIImage& image){
     // compute number of sectors in track 3
     isoFile.seekg(0, std::ios::end);
     isoTrackSectors = static_cast<int>(isoFile.tellg() / isoTrack->sectorSize);
-    std::cout << "[i] Number of sectors in track03: " << isoTrackSectors << std::endl;
     isoFile.seekg(0, std::ios::beg);
 }
 
@@ -43,12 +41,13 @@ bool GDISectorReader::readSector(uint32_t diskLBA, std::vector<uint8_t>& out){
             // track03 already contains isoTrackSectors sectors
             // so the next one lives in the dataTrack, and we should remove
             // the number of sectors stored in track03 already
-            fileLBA = fsLBA - isoTrackSectors;
+            
+            fileLBA = fsLBA + 45000 - dataTrack->lba;
         }
     }
-
+    
     out.resize(2048);
-    file->seekg(fileLBA * RAW + OFFSET);
+    file->seekg(fileLBA * RAW + OFFSET, std::ios::beg);
     file->read(reinterpret_cast<char*>(out.data()), 2048);
 
     return file->good(); // returns true if all the stream flags are false

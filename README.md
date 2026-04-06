@@ -14,9 +14,34 @@ cmake ..
 cmake --build .
 ```
 
+Now you can run `gdiextract`:
+
+```bash
+$ ./gdiextract
+input: 1 argument(s) expected. 0 provided.
+Usage: gdiextract [--help] [--version] --output VAR [--debug] [--list] input
+
+Positional arguments:
+  input
+
+Optional arguments:
+  -h, --help     shows help message and exits
+  -v, --version  prints version information and exits
+  -o, --output   specify the output directory (to save the extracted files) [nargs=0..1] [default: "extracted"]
+  -d, --debug    print more debug information
+  -l, --list     tree-list GD-ROM content without extracting
+```
+
+### Tested GD-ROM dumps
+
+This tool has been tested on:
+- `Disney's Donald Duck: Quack Attack` (3 tracks GD-ROM)
+- `Sega Rally 2 (USA)` (multi-tracks GD-ROM)
+
+
 ## The GD-ROM format
 
-This is complicated and yet not so clear to me, so take the following information with care.
+This is complicated, so take the following information with care.
 
 ### Before you begin
 
@@ -89,11 +114,3 @@ When the ISO parser requests sector `N`, we read offset `N * sector_size` from `
 ```
 
 **Subsequent important caveat**: if the GD-ROM contains more than 3 tracks, we explained that the headers are stored in `track03`, while the actual data is stored in the last track. As a result, when we want to access a data sector, the offset inside the track (as seen as a normal file by C++ code), we have to substract the number of sectors that were stored inside `track03` as the FS headers.
-
-## Tests
-
-This tool has been tested on:
-- `Disney's Donald Duck: Quack Attack` (3 tracks GD-ROM)
-- `Sega Rally 2 (USA)` (multi-tracks GD-ROM)
-
-We observe succesful identification of the `CD001` string in the 16-th sector (first volume descriptor) of the **ISO9660** filesystem.

@@ -76,7 +76,69 @@ void ISO9660::prettyPrintTree(const DirectoryRecord& root, uint16_t depth){
         if (depth > 1)
             std::cout << "|-- ";
         std::cout << (*it).name << std::endl;
-        if ((*it).flags & (1 << 1))
+        if ((*it).flags & (1 << 1)) // is a directory
             prettyPrintTree((*it), depth+1);
+    }
+}
+
+void ISO9660::extractFile(const DirectoryRecord& fileDirectoryRecord, std::filesystem::path pathToExtractFolder) {
+    std::filesystem::path savePath = pathToExtractFolder / fileDirectoryRecord.name;
+
+    if (fileDirectoryRecord.flags & (1 << 1)){
+        std::vector<DirectoryRecord> children = getDirectoryContent(fileDirectoryRecord);
+        for (auto it = children.begin(); it != children.end(); ++it) {
+            if (it->name == "." || it->name == "..")
+                continue;
+            if (it->flags & (1 << 1)){ // child is a directory
+                std::filesystem::create_directory(pathToExtractFolder / it->name);
+                extractFile((*it), pathToExtractFolder / it->name);
+            } else {
+                extractFile((*it), pathToExtractFolder);
+            }
+        }
+    } else { // file contains data        
+        std::vector<uint8_t> sectorDump;
+        char *fileDump = (char*)malloc(fileDirectoryRecord.size);
+        
+        uint32_t readSize = 0;
+        uint16_t sectorIncrement = 0;
+        while (readSize < fileDirectoryRecord.size){
+            // This assumes that the file is not fragmented
+            // I could be wrong, but I have not seen any Sega GD-ROM 
+            // where files are fragmented. 
+            // I'll need to find one to implement support
+
+            // std::cout << "File size: " << fileDirectoryRecord.size << std::endl;
+            // std::cout << "So far, read " << readSize << std::endl;
+            // std::cout << "Reading sector " << fileDirectoryRecord.sector + sectorIncrement << std::endl;
+            
+            reader.readSector(fileDirectoryRecord.sector + sectorIncrement, sectorDump);
+            // std::cout << "Read sector content: ";
+            // for (uint8_t b : sectorDump) {
+            //     std::cout << std::hex << static_cast<int>(b) << " ";
+            // }
+            // std::cout << std::dec << std::endl;
+            memcpy(fileDump + 2048 * sectorIncrement, sectorDump.data(), std::min((uint32_t)2048, fileDirectoryRecord.size - readSize));
+            // std::cout << "Copied " << std::min((uint32_t)2048, fileDirectoryRecord.size - readSize) << std::endl;
+            
+            // std::cout << "Beginning of fileDump now: " << std::endl;
+            // for (int i = 0; i < 100 ; ++i)
+            //     std::cout << static_cast<int>(fileDump[i]) << " ";
+            // std::cout << std::endl;
+            
+            readSize += sectorDump.size();
+            sectorIncrement += 1;
+        }
+
+        // std::cout << "Writing file content: ";
+        // for (int i = 0; i < 100 ; ++i)
+        //     std::cout << static_cast<int>(fileDump[i]) << " ";
+        // std::cout << std::endl;
+
+        std::ofstream file(savePath);
+        file.write((char*)fileDump, fileDirectoryRecord.size);
+        file.close();
+
+        free(fileDump);
     }
 }

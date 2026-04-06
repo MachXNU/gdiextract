@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <fstream>
+#include <cstdlib>
 
 struct DirectoryRecord{
     uint8_t         length;
@@ -24,6 +26,7 @@ public:
     DirectoryRecord parseDirectoryRecord(const uint8_t* rec);
     std::vector<DirectoryRecord> getDirectoryContent(const DirectoryRecord& parent);
     void prettyPrintTree(const DirectoryRecord& root, uint16_t depth = 0);
+    void extractFile(const DirectoryRecord& file, std::filesystem::path pathToExtractFolder);
 
 private:
     GDISectorReader& reader;
