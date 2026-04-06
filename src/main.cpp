@@ -2,6 +2,8 @@
 #include <cassert>
 #include <fstream>
 
+#include <argparse/argparse.hpp>
+
 #include "gdi.hpp"
 #include "GDISectorReader.hpp"
 #include "ISO9660.hpp"
@@ -16,14 +18,28 @@ int main(int argc, char* argv[]){
     bool debug = false;
     std::string filename;
 
-    int i = 0;
-    while (i < argc) {
-        if (std::string(argv[i]) == "-d")
-            debug = true;
-        else
-            filename = std::string(argv[i]);
-        i++;
+    argparse::ArgumentParser program("gdiextract");
+
+    program.add_argument("input");
+
+    program.add_argument("-o", "--output")
+        .default_value(std::string("extracted"))
+        .required()
+        .help("specify the output directory (to save the extracted files)");
+
+    program.add_argument("-d", "--debug")
+        .implicit_value(true)
+        .help("print more debug information");
+    
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::exception& err) {
+        std::cerr << err.what() << std::endl;
+        std::cerr << program;
+        return 1;
     }
+
+    filename = program.get<std::string>("input");
 
     // ========== Opening the file ==========
     std::ifstream fileBuffer(filename);
@@ -34,7 +50,7 @@ int main(int argc, char* argv[]){
     // ========== Parsing the .gdi file ==========
     GDIImage img = parseGDI(fileBuffer);
 
-    if (debug){
+    if (program["--debug"] == true){
         std::cout << "[+] Found " << img.tracks.size() << " tracks:" << std::endl;
         for (GDITrack& t : img.tracks)
             std::cout << "[i] " << t.trackNumber << " " << t.filename << "\n";
@@ -59,9 +75,12 @@ int main(int argc, char* argv[]){
 
     DirectoryRecord rootDirectoryRecord = fs.parseDirectoryRecord(root);
 
-    std::cout << "Directory name: " << rootDirectoryRecord.name << std::endl;
-    std::cout << "Sector: " << rootDirectoryRecord.sector << std::endl;
-    std::cout << "====================" << std::endl;
+    if (program["--debug"] == true){
+        std::cout << "Checking root directory record:" << std::endl;
+        std::cout << "Directory name: " << rootDirectoryRecord.name << std::endl;
+        std::cout << "Sector: " << rootDirectoryRecord.sector << std::endl;
+        std::cout << "====================" << std::endl;
+    }
 
     // ========== Reading the content of the root directory ==========
 
