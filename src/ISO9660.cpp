@@ -42,25 +42,32 @@ DirectoryRecord ISO9660::parseDirectoryRecord(const uint8_t* record){
     return r; 
 }
 
-std::vector<DirectoryRecord> ISO9660::getDirectoryContent(const DirectoryRecord& parent){
-    
+std::vector<DirectoryRecord> ISO9660::getDirectoryContent(const DirectoryRecord& parent) {
     std::vector<DirectoryRecord> children;
 
-    uint16_t offset = 0;
-    uint32_t readSize = 0;
+    uint32_t bytesRead = 0;
     uint32_t currentSector = parent.sector;
 
-    while (readSize < parent.length){
-        std::vector<uint8_t> directorySector;
-        assert(reader.readSector(currentSector, directorySector) && "Error, failed to read content directory sector");
-        offset = 0;
-        while (directorySector[offset] != 0) {
-            DirectoryRecord content = parseDirectoryRecord(&directorySector[offset]);
-            children.push_back(content);
-            offset += content.length;
-            readSize += content.length;
+    while (bytesRead < parent.size) {
+        std::vector<uint8_t> sector;
+        assert(reader.readSector(currentSector, sector));
+
+        uint32_t offset = 0;
+        while (offset < 2048) {
+            uint8_t length = sector[offset];
+
+            if (length == 0) {
+                // end of sector, jump to next one
+                break;
+            }
+
+            DirectoryRecord record = parseDirectoryRecord(&sector[offset]);
+            children.push_back(record);
+
+            offset += length;
         }
-        currentSector += 1;
+        currentSector++;
+        bytesRead += 2048; // count full sector
     }
 
     return children;
@@ -71,11 +78,11 @@ void ISO9660::prettyPrintTree(const DirectoryRecord& root, uint16_t depth){
     for (auto it = children.begin(); it != children.end(); ++it) {
         if (it->name == "." || it->name == "..")
             continue;
-        for (uint16_t i = 0; i < depth-2; i++)
+        for (uint16_t i = 0; i < depth-1; i++)
             std::cout << "|   ";
-        if (depth > 1)
+        if (depth > 0)
             std::cout << "|-- ";
-        std::cout << (*it).name << std::endl;
+        std::cout << it->name << ", content at LBA " << it->sector << ", size of " << (uint32_t)it->size << std::endl;
         if ((*it).flags & (1 << 1)) // is a directory
             prettyPrintTree((*it), depth+1);
     }
