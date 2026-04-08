@@ -52,7 +52,7 @@ int main(int argc, char* argv[]){
 
 
     // ========== Parsing the .gdi file ==========
-    GDIImage img = parseGDI(fileBuffer, filename.parent_path());
+    GDIImage img = parseGDI(fileBuffer, absolute(filename.parent_path()));
 
     if (program["--debug"] == true){
         std::cout << "[+] Found " << img.tracks.size() << " tracks:" << std::endl;

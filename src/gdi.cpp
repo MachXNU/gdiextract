@@ -19,8 +19,19 @@ GDIImage parseGDI(std::ifstream& file, std::filesystem::path pathOfGdiParentFold
         GDITrack t;
 
         // streams the string, stopping at each whitespace until stream ends
-        iss >> t.trackNumber >> t.lba >> t.trackType
-            >> t.sectorSize >> t.filename >> t.offset;
+        // First, extract the first 4 values which are integers
+        iss >> t.trackNumber >> t.lba >> t.trackType >> t.sectorSize;
+        
+        // Now we need to read the filename (which can contain spaces)
+        std::string filename;
+        std::getline(iss, filename, '"');  // Skip leading whitespace before filename
+        std::getline(iss, filename, '"');  // Read filename until next quote
+        
+        // Finally extract the offset, which is the last number
+        iss >> t.offset;
+
+        // Assign the filename to the struct
+        t.filename = filename;
         
         t.absolutePath = pathOfGdiParentFolder / t.filename;
 

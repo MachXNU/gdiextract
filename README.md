@@ -37,7 +37,7 @@ Optional arguments:
 This tool has been tested on:
 - `Disney's Donald Duck: Quack Attack` (3 tracks GD-ROM)
 - `Sega Rally 2 (USA)` (multi-tracks GD-ROM)
-
+- `Rayman 2 - The Great Escape (Europe)` (3 tracks GD-ROM with spaces in the filenames)
 
 ## The GD-ROM format
 
