@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cstdint>
+#include <filesystem>
 
 struct GDITrack {
     int trackNumber;

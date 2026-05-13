@@ -5,6 +5,7 @@
 #include <optional>
 #include <fstream>
 #include <cstdlib>
+#include <cstring>
 
 struct DirectoryRecord{
     uint8_t         length;
