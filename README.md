@@ -32,6 +32,14 @@ Optional arguments:
   -l, --list     tree-list GD-ROM content without extracting
 ```
 
+### Using the Nix flake
+
+Alternatively, if Nix is installed on your system, you can simply run this tool with:
+
+```bash
+nix run github:MachXNU/gdiextract
+```
+
 ### Tested GD-ROM dumps
 
 This tool has been tested on:
